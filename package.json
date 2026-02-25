@@ -5,6 +5,10 @@
   "version": "0.1.0",
   "publisher": "quarto-stata-helper",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/James-Hodges/quarto-stata-helper.git"
+  },
   "categories": ["Data Science", "Notebooks", "Other"],
   "galleryBanner": {
     "color": "#1a1a2e",

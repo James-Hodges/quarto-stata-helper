@@ -1,0 +1,14 @@
+# Source files — not needed at runtime, dist/ contains the compiled output
+src/
+tsconfig.json
+
+# VS Code development config — not needed by end users
+.vscode/
+
+# Build/dev tooling
+node_modules/
+package-lock.json
+*.vsix
+
+# macOS
+.DS_Store
