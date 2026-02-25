@@ -1,0 +1,89 @@
+{
+  "name": "quarto-stata-helper",
+  "displayName": "Quarto Stata Helper",
+  "description": "An extension to streamline the installation process and improve integration of Quarto, Python, Jupyter, and nbstata in Visual Studio Code.",
+  "version": "0.1.0",
+  "publisher": "quarto-stata-helper",
+  "license": "MIT",
+  "categories": ["Data Science", "Notebooks", "Other"],
+  "galleryBanner": {
+    "color": "#1a1a2e",
+    "theme": "dark"
+  },
+  "engines": {
+    "vscode": "^1.74.0"
+  },
+  "activationEvents": [
+    "onStartupFinished"
+  ],
+  "main": "./dist/extension.js",
+  "contributes": {
+    "configuration": {
+      "title": "Quarto Stata Helper",
+      "properties": {
+        "quartoStataHelper.stataPath": {
+          "type": "string",
+          "default": "",
+          "markdownDescription": "Absolute path to your Stata executable (e.g. `/Applications/StataNow/StataMP`). Leave blank to auto-detect from known install locations. You can also set this by running the **Quarto Stata Helper: Select Stata Path** command."
+        }
+      }
+    },
+    "commands": [
+      {
+        "command": "quarto-stata-helper.checkDependencies",
+        "title": "Quarto Stata Helper: Check Dependencies"
+      },
+      {
+        "command": "quarto-stata-helper.installDependencies",
+        "title": "Quarto Stata Helper: Install Dependencies"
+      },
+      {
+        "command": "quarto-stata-helper.setupVenv",
+        "title": "Quarto Stata Helper: Setup Python Virtual Environment"
+      },
+      {
+        "command": "quarto-stata-helper.registerKernel",
+        "title": "Quarto Stata Helper: Register Stata Kernel"
+      },
+      {
+        "command": "quarto-stata-helper.configureSettings",
+        "title": "Quarto Stata Helper: Configure Settings"
+      },
+      {
+        "command": "quarto-stata-helper.selectStataPath",
+        "title": "Quarto Stata Helper: Select Stata Path"
+      },
+      {
+        "command": "quarto-stata-helper.previewDocument",
+        "title": "Quarto Stata Helper: Preview Document",
+        "icon": "$(play)"
+      },
+      {
+        "command": "quarto-stata-helper.setupWizard",
+        "title": "Quarto Stata Helper: Run Setup Wizard"
+      }
+    ],
+    "menus": {
+      "editor/title": [
+        {
+          "command": "quarto-stata-helper.previewDocument",
+          "when": "resourceExtname == .qmd",
+          "group": "navigation"
+        }
+      ]
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./tsconfig.json",
+    "watch": "tsc -watch -p ./tsconfig.json"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "@types/vscode": "^1.60.0",
+    "typescript": "^5.0.0",
+    "ts-loader": "^9.2.6",
+    "webpack": "^5.51.1",
+    "webpack-cli": "^4.8.0"
+  }
+}

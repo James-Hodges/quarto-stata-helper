@@ -1,0 +1,8 @@
+{
+    "recommendations": [
+        "quarto.quarto",
+        "ms-toolsai.jupyter",
+        "ms-python.python",
+        "nbstata.nbstata"
+    ]
+}
