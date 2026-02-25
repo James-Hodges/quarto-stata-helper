@@ -4,7 +4,9 @@ import * as vscode from 'vscode';
 import { isMac } from '../utils/platform';
 import { runCommand } from '../utils/terminal';
 
-export async function setupVenv(): Promise<string | false> {
+export async function setupVenv(
+    onProgress?: (message: string) => void,
+): Promise<string | false> {
     // Platform guard — expand this block when adding Windows/Linux support
     if (!isMac()) {
         vscode.window.showErrorMessage('setupVenv is currently only supported on macOS.');
@@ -41,9 +43,11 @@ export async function setupVenv(): Promise<string | false> {
         // Always run pip installs: pip is idempotent so already-installed
         // packages return instantly. This also fixes any broken/missing
         // packages from a previous partial install.
+        // --quiet suppresses verbose output; --disable-pip-version-check
+        // suppresses the "new version of pip" warning in stderr.
         for (const pkg of packages) {
             try {
-                await runCommand(`${pip} install ${pkg}`);
+                await runCommand(`${pip} install --quiet --disable-pip-version-check ${pkg}`);
                 vscode.window.showInformationMessage(`${pkg} ready.`);
             } catch (error) {
                 vscode.window.showErrorMessage(

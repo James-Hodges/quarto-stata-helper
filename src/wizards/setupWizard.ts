@@ -110,9 +110,9 @@ export class SetupWizard {
                 cancellable: false,
             },
             async (progress) => {
-                // ── Step 4: Create venv + install Python packages ─────────────
-                progress.report({ message: 'Creating virtual environment and installing packages…' });
-                venvPath = await setupVenv();
+                // ── Step 4: Create venv + install Python packages ───────────────
+                progress.report({ message: 'Setting up virtual environment…' });
+                venvPath = await setupVenv((msg) => progress.report({ message: msg }));
                 if (!venvPath) {
                     vscode.window.showErrorMessage(
                         'Setup failed: could not create the virtual environment. ' +
@@ -169,6 +169,10 @@ hist mpg
             // Only create if it doesn't already exist so we don't clobber user files.
             if (!fs.existsSync(templatePath)) {
                 fs.writeFileSync(templatePath, templateContent, 'utf8');
+            } else {
+                vscode.window.showInformationMessage(
+                    'test_stata.qmd already exists — skipping template creation.',
+                );
             }
 
             // Ensure .venv is excluded from git — without this, git status will

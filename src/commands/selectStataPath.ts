@@ -1,4 +1,5 @@
 import * as fs from 'fs';
+import * as path from 'path';
 import * as vscode from 'vscode';
 
 /**
@@ -51,10 +52,17 @@ function resolveAppBundle(candidate: string): string {
 }
 
 /**
- * Probes well-known macOS install locations and returns the first Stata
- * executable found, or `undefined` if none exist.
- * Handles both bare binaries (older installs) and `.app` bundles (newer installs).
+ * Given a path that may point at a macOS `.app` bundle, resolve it to the
+ * actual Unix executable inside `Contents/MacOS/<name>`.
+ * If the path is already a plain binary (or the resolved path doesn't exist),
+ * the original path is returned unchanged.
+ *
+ * Exported so other modules can normalise stored paths that may be bundle paths.
  */
+export function resolveAppBundlePath(candidate: string): string {
+    return resolveAppBundle(candidate);
+}
+
 export function findStataExecutable(): string | undefined {
     for (const dir of STATA_SEARCH_DIRS) {
         for (const exe of STATA_EXECUTABLES) {
@@ -90,6 +98,42 @@ export function getStataPath(): string | undefined {
     }
 
     return findStataExecutable();
+}
+
+/**
+ * Given a resolved Stata binary path, returns the directory that nbstata
+ * expects for `stata_dir` in ~/.nbstata.conf.
+ *
+ * nbstata wants the folder that *contains* the .app bundle (or bare binary),
+ * NOT the binary itself. Examples:
+ *   /Applications/StataNow/StataBE.app/Contents/MacOS/StataBE
+ *     → /Applications/StataNow
+ *   /Applications/Stata18/StataMP
+ *     → /Applications/Stata18
+ */
+export function getStataDir(resolvedBinaryPath: string): string {
+    // If path contains .app, the stata_dir is the folder containing the .app
+    const appIndex = resolvedBinaryPath.indexOf('.app');
+    if (appIndex !== -1) {
+        const appBundle = resolvedBinaryPath.slice(0, appIndex + 4); // up to and including .app
+        return path.dirname(appBundle);
+    }
+    // Bare binary — stata_dir is just the parent directory
+    return path.dirname(resolvedBinaryPath);
+}
+
+/**
+ * Infers the Stata edition from the resolved binary path.
+ * Returns 'mp', 'se', 'be', or 'stata' (the generic fallback).
+ * nbstata expects lowercase in the conf file.
+ */
+export function getStataEdition(resolvedBinaryPath: string): string {
+    // Strip .app suffix before checking so 'StataBE.app' correctly matches 'be'
+    const name = path.basename(resolvedBinaryPath, '.app').toLowerCase();
+    if (name.includes('mp'))  { return 'mp'; }
+    if (name.includes('se'))  { return 'se'; }
+    if (name.includes('be'))  { return 'be'; }
+    return 'stata';
 }
 
 /**

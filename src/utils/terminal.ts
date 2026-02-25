@@ -13,7 +13,7 @@ const execPromise = promisify(exec);
  */
 export async function runCommand(command: string): Promise<string> {
     try {
-        const { stdout } = await execPromise(command);
+        const { stdout } = await execPromise(command, { maxBuffer: 10 * 1024 * 1024 });
         return stdout;
     } catch (error) {
         const err = error as Error & { stderr?: string; stdout?: string };

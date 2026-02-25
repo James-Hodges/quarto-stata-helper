@@ -1,7 +1,8 @@
 import * as fs from 'fs';
+import * as os from 'os';
 import * as path from 'path';
 import { window, workspace } from 'vscode';
-import { getStataPath } from './selectStataPath';
+import { getStataPath, getStataDir, getStataEdition, resolveAppBundlePath } from './selectStataPath';
 
 export async function configureSettings(): Promise<void> {
     const workspaceFolder = workspace.workspaceFolders?.[0];
@@ -23,7 +24,12 @@ export async function configureSettings(): Promise<void> {
 
     // If we know where Stata lives, write it into the nbstata settings so the
     // kernel can find Stata without the user needing to configure it separately.
-    const stataPath = getStataPath();
+    // Resolve any .app bundle path to the actual binary inside it, in case an
+    // older version of the extension saved the bundle path instead of the binary.
+    const rawStataPath = getStataPath();
+    const stataPath = rawStataPath?.endsWith('.app')
+        ? resolveAppBundlePath(rawStataPath)
+        : rawStataPath;
     if (stataPath) {
         newSettings['nbstata.stataPath'] = stataPath;
     }
@@ -52,6 +58,28 @@ export async function configureSettings(): Promise<void> {
         // newSettings act as defaults — only applied when the key is absent.
         const updatedSettings = { ...newSettings, ...existingSettings };
         fs.writeFileSync(settingsPath, JSON.stringify(updatedSettings, null, 4));
+
+        // ── Write ~/.nbstata.conf ─────────────────────────────────────────────
+        // nbstata reads this file when invoked by Quarto outside of VS Code.
+        // It needs stata_dir (the folder *containing* the .app bundle) and
+        // edition — NOT the full binary path that .vscode/settings.json uses.
+        // We always overwrite so that previously-wrong values (e.g. a full
+        // binary path the user entered manually) are corrected automatically.
+        if (stataPath) {
+            const nbstataConfPath = path.join(os.homedir(), '.nbstata.conf');
+            const stataDir = getStataDir(stataPath);
+            const edition = getStataEdition(stataPath);
+            const confContent =
+`[nbstata]
+stata_dir = ${stataDir}
+edition = ${edition}
+splash = False
+`;
+            fs.writeFileSync(nbstataConfPath, confContent, 'utf8');
+            window.showInformationMessage(
+                `nbstata config written: stata_dir = ${stataDir}, edition = ${edition}`,
+            );
+        }
     } catch (error) {
         window.showErrorMessage(`Error configuring VS Code settings: ${(error as Error).message}`);
     }
