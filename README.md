@@ -1,6 +1,8 @@
 # Quarto Stata Helper
 
-A VS Code extension that automates the setup of a [Quarto](https://quarto.org) + [Stata](https://www.stata.com) writing environment using the [nbstata](https://github.com/hugetim/nbstata) Jupyter kernel. After running the one-time setup wizard, you can write `.qmd` documents with `{stata}` code cells that execute live against a licensed Stata installation.
+A VS Code extension that automates the setup of a [Quarto](https://quarto.org) + [Stata](https://www.stata.com) writing environment using the [nbstata](https://github.com/hugetim/nbstata) Jupyter kernel. After running the one-time setup wizard, you can write `.qmd` documents with latex, markdown syntax, and `{stata}` code cells that execute live against a licensed Stata installation.
+
+
 
 ---
 
@@ -55,8 +57,14 @@ The wizard will:
 
 Open `test_stata.qmd` (created by the wizard, or use **Open test_stata.qmd** in the completion dialog).
 
-- **Interactive cells**: Click the ▶ button next to a `{stata}` code cell. When prompted for a kernel, select **nbstata**. The cell will execute against your live Stata installation.
-- **Full document preview**: Click the **▶ (play)** button in the editor title bar (top right) to run `quarto preview` in a dedicated terminal. This renders the document and opens a live-reloading browser preview.
+- **Interactive cells**: Click the ▶ button next to a `{stata}` code cell to open the interactive panel.
+
+  > **First-time kernel selection:** The interactive panel will open with the wrong kernel (usually **Python**). You need to switch it to the Stata kernel once:
+  > 1. Look for the kernel name in the **top-right corner** of the interactive panel — it will show something like **Python 3**.
+  > 2. Click it and select **nbstata** from the dropdown.
+  > 3. VS Code will remember this choice for subsequent runs.
+
+- **Full document preview**: Click the **▶ (play)** button in the editor title bar (top right) to run `quarto preview` in a dedicated terminal. This renders the document and opens a live-reloading browser preview inside VS Code.
 
 ---
 
