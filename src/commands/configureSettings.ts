@@ -18,7 +18,8 @@ export async function configureSettings(): Promise<void> {
     const newSettings: Record<string, unknown> = {
         // Absolute path — the ${workspaceFolder} token is not resolved by all
         // consumers (e.g. nbstata reads the raw string from settings.json).
-        'python.defaultInterpreterPath': path.join(workspacePath, '.venv', 'bin', 'python'),
+        // This line was breaking things, vscode threw errors about being unable to intepret this. 
+        //'python.defaultInterpreterPath': path.join(workspacePath, '.venv', 'bin', 'python'),
         'jupyter.defaultKernel': 'nbstata',
     };
 

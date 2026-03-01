@@ -40,14 +40,16 @@ export async function previewDocument(): Promise<void> {
     // Save now that we've confirmed it's a .qmd file
     await editor.document.save();
 
-    const qmdPath = editor.document.fileName;
-    const venvActivate = path.join(workspaceFolder.uri.fsPath, '.venv', 'bin', 'activate');
-    const quotedQmd = `"${qmdPath}"`;
+    const workspaceRoot = workspaceFolder.uri.fsPath;
+    const venvActivate = path.join(workspaceRoot, '.venv', 'bin', 'activate');
+    const relativeQmd = path.relative(workspaceRoot, editor.document.fileName);
+    const quotedQmd = `"${relativeQmd}"`;
 
     // ── Reuse or create the preview terminal ─────────────────────────────────
     // Check if our terminal is still alive (user may have closed it manually)
     const existingTerminals = vscode.window.terminals;
     const existingPreview = existingTerminals.find(t => t.name === 'Quarto Preview');
+
 
     if (existingPreview) {
         // Dispose the old terminal entirely rather than sending Ctrl+C with an
@@ -57,9 +59,10 @@ export async function previewDocument(): Promise<void> {
         await new Promise(resolve => setTimeout(resolve, 1000));
     }
 
+
     previewTerminal = vscode.window.createTerminal({
         name: 'Quarto Preview',
-        cwd: workspaceFolder.uri.fsPath,
+        cwd: workspaceRoot,
     });
 
     previewTerminal.show(false); // show but don't steal focus from the editor
@@ -67,5 +70,5 @@ export async function previewDocument(): Promise<void> {
     // ── Activate venv and launch preview ─────────────────────────────────────
     // We activate the venv explicitly so quarto finds the correct python/jupyter
     // with nbstata installed, regardless of the system PATH.
-    previewTerminal.sendText(`source "${venvActivate}" && quarto preview ${quotedQmd}`, true);
+    previewTerminal.sendText(`quarto preview ${relativeQmd} --no-watch --no-browser`, true);
 }
