@@ -1,5 +1,73 @@
+import * as net from 'net';
 import * as path from 'path';
 import * as vscode from 'vscode';
+
+/**
+ * Returns a promise resolving to a free TCP port chosen from the given range.
+ * Tries ports in random order; throws if none are available.
+ */
+function getFreePortInRange(min: number, max: number): Promise<number> {
+    const ports = Array.from({ length: max - min + 1 }, (_, i) => min + i)
+        .sort(() => Math.random() - 0.5); // shuffle so we don't always pick the same one
+
+    return new Promise((resolve, reject) => {
+        const tryNext = (remaining: number[]) => {
+            if (remaining.length === 0) {
+                reject(new Error(`No free port found in range ${min}–${max}`));
+                return;
+            }
+            const [port, ...rest] = remaining;
+            const server = net.createServer();
+            server.once('error', () => tryNext(rest));
+            server.listen(port, '127.0.0.1', () => {
+                server.close(() => resolve(port));
+            });
+        };
+        tryNext(ports);
+    });
+}
+
+/**
+ * Polls localhost:port until a TCP connection succeeds (server is up) or the
+ * timeout is exceeded. Resolves true if the server came up, false if it timed out.
+ */
+function waitForPort(port: number, timeoutMs = 60_000, intervalMs = 500): Promise<boolean> {
+    return new Promise(resolve => {
+        const deadline = Date.now() + timeoutMs;
+
+        const probe = () => {
+            const socket = new net.Socket();
+            socket.setTimeout(intervalMs);
+
+            socket.once('connect', () => {
+                socket.destroy();
+                resolve(true);
+            });
+
+            socket.once('error', () => {
+                socket.destroy();
+                if (Date.now() < deadline) {
+                    setTimeout(probe, intervalMs);
+                } else {
+                    resolve(false);
+                }
+            });
+
+            socket.once('timeout', () => {
+                socket.destroy();
+                if (Date.now() < deadline) {
+                    setTimeout(probe, intervalMs);
+                } else {
+                    resolve(false);
+                }
+            });
+
+            socket.connect(port, '127.0.0.1');
+        };
+
+        probe();
+    });
+}
 
 /**
  * Owns the single persistent preview terminal so we can reuse or replace it
@@ -60,23 +128,37 @@ export async function previewDocument(): Promise<void> {
     }
 
 
-    // ── TESTING: Run preview as a VS Code Task instead of via sendText ───────
-    // Using ShellExecution gives more control over the environment and avoids
-    // the interactive-shell quirks of sendText (e.g. env-change relaunches
-    // interrupting the process). Remove this block and restore the terminal
-    // approach below if it causes issues.
+    // ── Pick a free port in our reserved range ─────────────────────────────
+    // By choosing the port ourselves we know the preview URL before the server
+    // starts, so we can open the Simple Browser immediately — no output parsing
+    // or timed delays needed.
+    const port = await getFreePortInRange(3690, 3699);
+    const previewUrl = `http://localhost:${port}`;
+
+    // ── Run preview as a VS Code Task ─────────────────────────────────────────
     const task = new vscode.Task(
         { type: 'shell' },
         workspaceFolder,
         'Quarto Preview',
         'quarto-stata-helper',
         new vscode.ShellExecution(
-            `source "${venvActivate}" && quarto preview ${quotedQmd} --no-watch --no-browser`,
+            `source "${venvActivate}" && quarto preview ${quotedQmd} --no-watch --no-browser --port ${port}`,
             { cwd: workspaceRoot },
         ),
     );
     await vscode.tasks.executeTask(task);
-    // ── END TESTING ───────────────────────────────────────────────────────────
+
+    // ── Wait for the server to be ready, then open the Simple Browser ─────────
+    // Poll the port every 500 ms (up to 60 s) so the browser opens the moment
+    // Quarto is ready — no fixed delay, no output parsing.
+    const serverReady = await waitForPort(port);
+    if (serverReady) {
+        await vscode.commands.executeCommand('simpleBrowser.show', previewUrl);
+    } else {
+        vscode.window.showWarningMessage(
+            `Quarto preview server did not start on port ${port} within 60 s.`,
+        );
+    }
 
     // ── Original terminal approach (kept for reference) ───────────────────────
     // previewTerminal = vscode.window.createTerminal({
