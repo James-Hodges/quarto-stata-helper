@@ -21,6 +21,12 @@ export async function configureSettings(): Promise<void> {
         // This line was breaking things, vscode threw errors about being unable to intepret this. 
         //'python.defaultInterpreterPath': path.join(workspacePath, '.venv', 'bin', 'python'),
         'jupyter.defaultKernel': 'nbstata',
+
+        // TESTING: Prevents VS Code from relaunching the terminal when an extension
+        // (e.g. the Python extension activating a venv) changes the terminal environment.
+        // Without this, the Quarto preview render can be interrupted mid-run by a
+        // `source activate` relaunch. Remove this if it causes other issues.
+        'terminal.integrated.environmentChangesRelaunch': false,
     };
 
     // If we know where Stata lives, write it into the nbstata settings so the

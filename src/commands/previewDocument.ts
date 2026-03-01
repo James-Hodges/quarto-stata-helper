@@ -60,15 +60,30 @@ export async function previewDocument(): Promise<void> {
     }
 
 
-    previewTerminal = vscode.window.createTerminal({
-        name: 'Quarto Preview',
-        cwd: workspaceRoot,
-    });
+    // ── TESTING: Run preview as a VS Code Task instead of via sendText ───────
+    // Using ShellExecution gives more control over the environment and avoids
+    // the interactive-shell quirks of sendText (e.g. env-change relaunches
+    // interrupting the process). Remove this block and restore the terminal
+    // approach below if it causes issues.
+    const task = new vscode.Task(
+        { type: 'shell' },
+        workspaceFolder,
+        'Quarto Preview',
+        'quarto-stata-helper',
+        new vscode.ShellExecution(
+            `source "${venvActivate}" && quarto preview ${quotedQmd} --no-watch --no-browser`,
+            { cwd: workspaceRoot },
+        ),
+    );
+    await vscode.tasks.executeTask(task);
+    // ── END TESTING ───────────────────────────────────────────────────────────
 
-    previewTerminal.show(false); // show but don't steal focus from the editor
-
-    // ── Activate venv and launch preview ─────────────────────────────────────
-    // We activate the venv explicitly so quarto finds the correct python/jupyter
-    // with nbstata installed, regardless of the system PATH.
-    previewTerminal.sendText(`quarto preview ${relativeQmd} --no-watch --no-browser`, true);
+    // ── Original terminal approach (kept for reference) ───────────────────────
+    // previewTerminal = vscode.window.createTerminal({
+    //     name: 'Quarto Preview',
+    //     cwd: workspaceRoot,
+    // });
+    // previewTerminal.show(false);
+    // previewTerminal.sendText(`quarto preview ${relativeQmd} --no-watch --no-browser`, true);
+    // ── END original approach ─────────────────────────────────────────────────
 }
