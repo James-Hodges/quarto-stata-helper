@@ -1,7 +1,7 @@
 {
   "name": "quarto-stata-helper",
   "displayName": "Quarto Stata Helper",
-  "description": "An extension to streamline the installation process and improve integration of Quarto, Python, Jupyter, and nbstata in Visual Studio Code.",
+  "description": "Streamlines the setup and integration of Quarto, Python, Jupyter, and nbstata in Visual Studio Code. Requires Quarto and Python to be pre-installed.",
   "version": "0.1.0",
   "publisher": "quarto-stata-helper",
   "license": "MIT",
@@ -17,6 +17,11 @@
   "engines": {
     "vscode": "^1.74.0"
   },
+  "extensionDependencies": [
+    "quarto.quarto",
+    "ms-python.python",
+    "ms-toolsai.jupyter"
+  ],
   "activationEvents": [
     "onStartupFinished"
   ],

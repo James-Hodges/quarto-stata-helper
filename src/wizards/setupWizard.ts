@@ -67,35 +67,22 @@ export class SetupWizard {
             // be built but nbstata won't run cells until Stata is installed.
         }
 
-        // ── Step 3: Install missing system dependencies via Homebrew ──────────
-        // Exclude Python-package deps (handled by setupVenv) and stata
-        // (handled above or must be installed manually).
-        const brewDeps = missingDeps.filter(
+        // ── Step 3: Ensure required system tools are present ─────────────────
+        // Quarto and Python must be installed by the user before setup can
+        // continue. This extension does not install system-level tools.
+        const missingSystemDeps = missingDeps.filter(
             d => d !== 'nbstata' && d !== 'jupyter' && d !== 'stata',
         );
-        if (brewDeps.length > 0) {
-            const install = await vscode.window.showInformationMessage(
-                `Missing system tools: ${brewDeps.join(', ')}. Install now via Homebrew?`,
+        if (missingSystemDeps.length > 0) {
+            // Show per-dep error messages with links to the download pages.
+            installDependencies(missingSystemDeps);
+            await vscode.window.showErrorMessage(
+                `Setup cannot continue: the following required tools are missing: ${missingSystemDeps.join(', ')}. ` +
+                'Please install them, make sure they are available on your PATH, restart VS Code, then run the setup wizard again.',
                 { modal: true },
-                'Yes',
-                'No',
+                'OK',
             );
-            if (install === 'Yes') {
-                // installDependencies opens a visible terminal so admin-password
-                // prompts work. Because the terminal is async we cannot await
-                // completion — stop here and ask the user to re-run the wizard.
-                installDependencies(brewDeps);
-                vscode.window.showInformationMessage(
-                    'Installing system tools in the "Quarto Stata Helper: Install" terminal. ' +
-                    'Once the installs finish, run the setup wizard again to complete setup.',
-                    { modal: true },
-                    'OK',
-                );
-                return;
-            }
-            // 'No': user chose to skip — continue setup anyway (quarto/python
-            // may already be installed despite not being detected, or user will
-            // fix it manually).
+            return;
         }
 
         // ── Steps 4–6: venv, kernel, settings (wrapped in progress notification)

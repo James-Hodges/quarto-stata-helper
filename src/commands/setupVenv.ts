@@ -1,18 +1,11 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import * as vscode from 'vscode';
-import { isMac } from '../utils/platform';
 import { runCommand } from '../utils/terminal';
 
 export async function setupVenv(
     onProgress?: (message: string) => void,
 ): Promise<string | false> {
-    // Platform guard — expand this block when adding Windows/Linux support
-    if (!isMac()) {
-        vscode.window.showErrorMessage('setupVenv is currently only supported on macOS.');
-        return false;
-    }
-
     const workspaceFolder = vscode.workspace.workspaceFolders?.[0];
     if (!workspaceFolder) {
         vscode.window.showErrorMessage('No workspace folder found. Please open a folder first.');

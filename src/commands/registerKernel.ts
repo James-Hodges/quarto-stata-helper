@@ -1,5 +1,4 @@
 import * as vscode from 'vscode';
-import { isMac } from '../utils/platform';
 import { runCommand } from '../utils/terminal';
 
 /**
@@ -10,12 +9,6 @@ import { runCommand } from '../utils/terminal';
  *   function derives it from the first workspace folder.
  */
 export async function registerKernel(venvPath?: string): Promise<void> {
-    // Platform guard — expand this block when adding Windows/Linux support
-    if (!isMac()) {
-        vscode.window.showErrorMessage('registerKernel is currently only supported on macOS.');
-        return;
-    }
-
     let resolvedVenvPath = venvPath;
 
     if (!resolvedVenvPath) {

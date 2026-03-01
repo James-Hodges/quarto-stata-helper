@@ -2,31 +2,19 @@
 
 A VS Code extension that automates the setup of a [Quarto](https://quarto.org) + [Stata](https://www.stata.com) writing environment using the [nbstata](https://github.com/hugetim/nbstata) Jupyter kernel. After running the one-time setup wizard, you can write `.qmd` documents with `{stata}` code cells that execute live against a licensed Stata installation.
 
-> **macOS only.** Windows and Linux support is not yet implemented.
-
 ---
 
-## Dependencies
+## Prerequisites
 
-### Required — must be present before running the wizard
+The following must be installed **before** running the setup wizard. The extension does not install them for you.
 
-| Dependency | What it is | How to install |
-|---|---|---|
-| **Stata** | Licensed Stata installation (any edition: BE, SE, MP) | Purchase and install from [stata.com](https://www.stata.com). StataNow and versioned installs (Stata 16–18) are all supported. |
-| **Homebrew** | macOS package manager | `/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"` |
+| Prerequisite | How to install |
+|---|---|
+| **Stata** | Purchase and install from [stata.com](https://www.stata.com). StataNow and versioned installs (Stata 16–18) are all supported. |
+| **Python 3** | Download from [python.org](https://www.python.org/downloads/) or install via your preferred package manager. Make sure `python3` is available on your `PATH`. |
+| **Quarto** | Download from [quarto.org](https://quarto.org/docs/get-started/). Make sure `quarto` is available on your `PATH`. |
 
-### Installed automatically by the wizard
-
-| Dependency | What it is | Installed via |
-|---|---|---|
-| **Python 3** | Required to create the virtual environment | `brew install python` |
-| **Quarto** | Document rendering engine for `.qmd` files | `brew install --cask quarto` — runs in a visible terminal; requires admin password |
-| **nbstata** | Jupyter kernel that connects Quarto to Stata | `pip install nbstata` (into `.venv`) |
-| **ipykernel** | Required by Jupyter for the nbstata kernel | `pip install ipykernel` (into `.venv`) |
-| **nbformat** | Notebook format library used by nbstata | `pip install nbformat` (into `.venv`) |
-| **jupyter** | Core Jupyter libraries | `pip install jupyter` (into `.venv`) |
-
-### VS Code extensions — install separately from the Extensions panel
+The following VS Code extensions are **automatically installed** alongside this extension:
 
 | Extension | Why it's needed |
 |---|---|
@@ -38,11 +26,15 @@ A VS Code extension that automates the setup of a [Quarto](https://quarto.org) +
 
 ## Setup
 
-### 1. Open your project folder
+### 1. Install prerequisites
+
+Ensure **Python 3**, **Quarto**, and **Stata** are installed and that `python3` and `quarto` are available on your `PATH`. Restart VS Code after installing them so the new `PATH` entries are picked up.
+
+### 2. Open your project folder
 
 Open the folder where you want to write Stata Quarto documents in VS Code (**File → Open Folder**). The wizard creates all files (`.venv`, `.vscode/settings.json`, `test_stata.qmd`) inside this folder.
 
-### 2. Run the setup wizard
+### 3. Run the setup wizard
 
 Open the Command Palette (`Cmd+Shift+P`) and run:
 
@@ -52,15 +44,14 @@ Quarto Stata Helper: Run Setup Wizard
 
 The wizard will:
 
-1. **Check dependencies** — scans for Quarto, Python, Jupyter, nbstata, and Stata
-2. **Locate Stata** — probes known install paths automatically (see [Stata path detection](#stata-path-detection)); prompts you to locate it manually if not found
-3. **Install missing system tools** — if Quarto or Python are missing, offers to install them via Homebrew. The commands run in a dedicated **"Quarto Stata Helper: Install"** terminal that opens automatically so any admin-password prompts are visible and interactive. Because the terminal runs asynchronously, **the wizard will pause here** and ask you to re-run it once the installs finish.
-4. **Create `.venv`** — builds an isolated Python virtual environment in your workspace root and installs `nbstata`, `ipykernel`, `nbformat`, and `jupyter` into it
-5. **Register the kernel** — registers the nbstata Jupyter kernel so VS Code can find it
-6. **Write workspace settings** — creates/updates `.vscode/settings.json` with the correct Python interpreter path, nbstata Stata path, and default Jupyter kernel
-7. **Create a test file** — generates `test_stata.qmd` with a starter Stata snippet and offers to open it
+1. **Check dependencies** — verifies that Quarto, Python, and Stata are available. If any system tool is missing, setup stops and shows an error with a link to the relevant download page.
+2. **Locate Stata** — probes known install paths automatically (see [Stata path detection](#stata-path-detection)); prompts you to locate it manually if not found.
+3. **Create `.venv`** — builds an isolated Python virtual environment in your workspace root and installs `nbstata`, `ipykernel`, `nbformat`, and `jupyter` into it.
+4. **Register the kernel** — registers the nbstata Jupyter kernel so VS Code can find it.
+5. **Write workspace settings** — creates/updates `.vscode/settings.json` with the correct Python interpreter path, nbstata Stata path, and default Jupyter kernel.
+6. **Create a test file** — generates `test_stata.qmd` with a starter Stata snippet and offers to open it.
 
-### 3. Test your setup
+### 4. Test your setup
 
 Open `test_stata.qmd` (created by the wizard, or use **Open test_stata.qmd** in the completion dialog).
 
@@ -109,7 +100,6 @@ All commands are available via the Command Palette (`Cmd+Shift+P`):
 | `Quarto Stata Helper: Select Stata Path` | Opens a file picker to manually locate your Stata executable |
 | `Quarto Stata Helper: Preview Document` | Runs `quarto preview` for the active `.qmd` file in a dedicated terminal (also available as the ▶ button in the editor title bar) |
 | `Quarto Stata Helper: Check Dependencies` | Reports which dependencies are missing |
-| `Quarto Stata Helper: Install Dependencies` | Installs missing system dependencies via Homebrew |
 | `Quarto Stata Helper: Setup Python Virtual Environment` | Creates `.venv` and installs Python packages |
 | `Quarto Stata Helper: Register Stata Kernel` | Registers the nbstata kernel with Jupyter |
 | `Quarto Stata Helper: Configure Settings` | Writes `.vscode/settings.json` |
@@ -129,6 +119,10 @@ The wizard only modifies files inside your open workspace folder — nothing is 
 ---
 
 ## Troubleshooting
+
+### Quarto or Python not found during setup
+
+The wizard will stop and show an error message if `quarto` or `python3` are not on your `PATH`. Install the missing tool (see [Prerequisites](#prerequisites)), then **restart VS Code** so the updated `PATH` is picked up, and re-run the wizard.
 
 ### Stata not found during setup
 
@@ -186,7 +180,7 @@ Then close and reopen VS Code in the workspace folder and run the wizard again.
 
 ## Requirements summary
 
-- macOS (Intel or Apple Silicon)
 - VS Code 1.74.0 or later
+- Python 3 installed and available as `python3` on your `PATH`
+- Quarto installed and available as `quarto` on your `PATH`
 - A licensed copy of Stata (BE, SE, or MP; version 16 or later recommended)
-- Homebrew (for installing Python and Quarto if not already present)
