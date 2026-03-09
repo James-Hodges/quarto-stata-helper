@@ -4,11 +4,9 @@ import * as vscode from 'vscode';
 
 /**
  * Returns a promise resolving to a free TCP port chosen from the given range.
- * Tries ports in random order; throws if none are available.
  */
 function getFreePortInRange(min: number, max: number): Promise<number> {
-    const ports = Array.from({ length: max - min + 1 }, (_, i) => min + i)
-        .sort(() => Math.random() - 0.5); // shuffle so we don't always pick the same one
+    const ports = Array.from({ length: max - min + 1 }, (_, i) => min + i);
 
     return new Promise((resolve, reject) => {
         const tryNext = (remaining: number[]) => {

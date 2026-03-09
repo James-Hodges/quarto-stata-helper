@@ -2,7 +2,11 @@
 
 A VS Code extension that automates the setup of a [Quarto](https://quarto.org) + [Stata](https://www.stata.com) writing environment using the [nbstata](https://github.com/hugetim/nbstata) Jupyter kernel. After running the one-time setup wizard, you can write `.qmd` documents with latex, markdown syntax, and `{stata}` code cells that execute live against a licensed Stata installation.
 
-
+# Installation
+Download the .vsix file from this repo and install it in VSCode.
+- Navigate to the extensions panel
+- Click the three dots on the top right
+- Choose install from VSIX
 
 ---
 
